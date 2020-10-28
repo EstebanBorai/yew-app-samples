@@ -1,0 +1,9 @@
+#!bin/bash
+
+echo "Running Setup Script"
+
+echo "Installing \"wasm-pack\""
+cargo install wasm-pack
+
+echo "Installing \"http-server\""
+cargo install http-server

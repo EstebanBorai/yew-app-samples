@@ -1,0 +1,19 @@
+#!bin/bash
+
+TARGET=$1
+
+function build_target {
+  echo "Building $1"
+  cd ./$1 && wasm-pack build --dev --target web --out-name wasm --out-dir ./static/
+}
+
+case $TARGET in
+  "counter")
+    build_target $TARGET
+    ;;
+  *)
+    echo "Invalid target provided \"$TARGET\""
+    echo "Valid targets are: \"counter\""
+    exit 1
+    ;;
+esac
