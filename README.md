@@ -22,6 +22,10 @@ Scripts to consume these projects are available in the `bin` directory.
 
 ### Running a Project
 
+In the following sample we build the `counter` project, keep in mind that
+the project to build could be any of the projects listed in the [Projects](#Projects)
+section.
+
 ```bash
 # build the counter project
 bin/build counter
@@ -35,6 +39,7 @@ http-server ./counter/index.html
 ## Projects
 
 * `counter`: A basic counter using Yew's callbacks and state capabilities
+* `adder`: A simple sum calculator
 
 ## References
 

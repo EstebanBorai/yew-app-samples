@@ -11,9 +11,12 @@ case $TARGET in
   "counter")
     build_target $TARGET
     ;;
+  "adder")
+    build_target $TARGET
+    ;;
   *)
     echo "Invalid target provided \"$TARGET\""
-    echo "Valid targets are: \"counter\""
+    echo "Valid targets are: \"counter\",\"adder\""
     exit 1
     ;;
 esac
