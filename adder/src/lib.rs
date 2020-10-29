@@ -24,7 +24,7 @@ impl Component for Adder {
     type Message = Msg;
     type Properties = ();
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             state: State {
                 addend1: 0_f64,

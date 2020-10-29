@@ -1,70 +1,62 @@
 #![recursion_limit = "256"]
 
-use std::cell::RefCell;
-use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use yew::html;
 use yew::prelude::*;
-use yew::InputData;
 
-struct State {
-    addend1: f64,
-    addend2: f64,
-    total: f64,
-}
+mod database;
+mod login;
+mod person;
+mod user;
 
 enum Page {
     Login,
     PersonsList,
-    OnePerson(Option<Person>),
+    OnePerson(Option<person::Person>),
 }
 
 struct AuthApp {
     page: Page,
-    current_user: Option<String>,
+    current_user: Option<user::User>,
     can_write: bool,
-    db_conn: Rc<RefCell<DbConn>>,
+    db_conn: database::DbConn,
+    link: ComponentLink<Self>,
 }
 
 enum Msg {
-    ChangeInputValue(String, String),
-    Sum,
+    LoggedIn(user::User),
+    ChangeUser,
+    GoToOnePersonPage(Option<person::Person>),
+    GoToPersonsListPage,
 }
 
 impl Component for AuthApp {
     type Message = Msg;
     type Properties = ();
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
-            state: State {
-                addend1: 0_f64,
-                addend2: 0_f64,
-                total: 0_f64,
-            },
+            page: Page::Login,
+            current_user: None,
+            can_write: false,
+            db_conn: database::Database::new_thread_safe(),
             link,
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::ChangeInputValue(input_name, value) => {
-                if let Ok(next_value) = value.parse::<f64>() {
-                    if input_name == "addend1" {
-                        self.state.addend1 = next_value;
-                    } else {
-                        self.state.addend2 = next_value;
-                    }
-                }
-
-                true
-            }
-            Msg::Sum => {
-                self.state.total = self.state.addend1 + self.state.addend2;
-
-                true
-            }
+            Msg::LoggedIn(user) => {
+                self.page = Page::PersonsList;
+                self.current_user = Some(user.clone());
+                self.can_write = user.privileges.contains(&user::DbPrivilege::CanWrite);
+            },
+            Msg::ChangeUser => self.page = Page::Login,
+            Msg::GoToOnePersonPage(person) => self.page = Page::OnePerson(person),
+            Msg::GoToPersonsListPage => self.page = Page::PersonsList,
         }
+
+        true
     }
 
     fn change(&mut self, _: Self::Properties) -> ShouldRender {
@@ -72,49 +64,73 @@ impl Component for AuthApp {
     }
 
     fn view(&self) -> Html {
+        let go_to_page = self.link.callback(|u: user::User| {
+            Msg::LoggedIn(u)
+        });
+
         html! {
-            <table>
-                <tr>
-                    <td>{"Addend 1:"}</td>
-                    <td>
-                        <input
-                            type="number"
-                            style="text-align: right;"
-                            oninput=self.link.callback(|e: InputData| Msg::ChangeInputValue(String::from("addend1"), e.value))
-                        />
-                    </td>
-                </tr>
-                <tr>
-                    <td>{"Addend 2:"}</td>
-                    <td>
-                        <input
-                            type="number"
-                            style="text-align: right;"
-                            oninput=self.link.callback(|e: InputData| Msg::ChangeInputValue(String::from("addend2"), e.value))
-                        />
-                    </td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td align="center">
-                        <button
-                            onclick=self.link.callback(|_| Msg::Sum)
-                        >
-                            {"Add"}
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>{"Total: "}</td>
-                    <td>
-                        <input
-                            type="number"
-                            style="text-align: right;"
-                            value=self.state.total
-                        />
-                    </td>
-                </tr>
-            </table>
+            <div>
+                <style>
+                    {r#"
+                        .current-user {
+                            color: #0000C0;
+                        }
+                    "#}
+                </style>
+                <header>
+                    <h2>{"People Management"}</h2>
+                    <p>
+                        {"Current User: "}
+                        <span class="current-user">
+                            {
+                                if let Some(user) = &self.current_user {
+                                    user.username.as_str()
+                                } else {
+                                    "---"
+                                }
+                            }
+                        </span>
+                        {
+                            match self.page {
+                                Page::Login => html! {
+                                    <div />
+                                },
+                                _ => html! {
+                                    <span>
+                                        {""}
+                                        <button onclick=&self.link.callback(|_| Msg::ChangeUser)>
+                                            {"Change User"}
+                                        </button>
+                                    </span>
+                                }
+                            }
+                        }
+                    </p>
+                    <hr />
+                </header>
+                {
+                    match &self.page {
+                        Page::Login => html! {
+                            <login::Login
+                                user=self.current_user.clone()
+                                on_log_in=go_to_page.clone()
+                                db_conn=Some(self.db_conn.clone())
+                            />
+                        },
+                        _ => html! { <div></div> }
+                        // Page::PersonsList => html! {
+                        //     <div>
+                        //         <h1>{" Persons List Page "}</h1>
+                        //     </div>
+                        // },
+                        // Page::OnePerson(_) => html! {
+                        //     <div>
+                        //         <h1>{" One Person Page "}</h1>
+                        //     </div>
+                        // },
+                    }
+                }
+            </div>
         }
     }
 }
