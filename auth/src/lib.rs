@@ -1,11 +1,13 @@
 #![recursion_limit = "256"]
 
+use crate::pages::Login;
+
 use wasm_bindgen::prelude::*;
 use yew::html;
 use yew::prelude::*;
 
 mod database;
-mod login;
+mod pages;
 mod person;
 mod user;
 
@@ -111,7 +113,7 @@ impl Component for AuthApp {
                 {
                     match &self.page {
                         Page::Login => html! {
-                            <login::Login
+                            <Login
                                 user=self.current_user.clone()
                                 on_log_in=go_to_page.clone()
                                 db_conn=Some(self.db_conn.clone())
