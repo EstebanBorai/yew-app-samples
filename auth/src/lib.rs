@@ -1,6 +1,6 @@
 #![recursion_limit = "1024"]
 
-use crate::pages::{Login, PersonsList};
+use crate::pages::{Login, Person, PersonsList};
 
 use wasm_bindgen::prelude::*;
 use yew::html;
@@ -70,6 +70,10 @@ impl Component for AuthApp {
             Msg::LoggedIn(u)
         });
 
+        let go_to_persons_list_page = self.link.callback(|_| {
+            Msg::GoToPersonsListPage
+        });
+
         let go_to_one_person_page = self.link.callback(|p: Option<person::Person>| {
             Msg::GoToOnePersonPage(p)
         });
@@ -125,16 +129,20 @@ impl Component for AuthApp {
                         },
                         Page::PersonsList => html! {
                             <PersonsList
-                                can_write=true
+                                can_write=self.can_write
                                 go_to_one_person_page=go_to_one_person_page.clone()
                                 db_conn=Some(self.db_conn.clone())
                             />
                         },
-                        // Page::OnePerson(_) => html! {
-                        //     <div>
-                        //         <h1>{" One Person Page "}</h1>
-                        //     </div>
-                        // },
+                        Page::OnePerson(person) => html! {
+                            <Person
+                                can_write=self.can_write
+                                id=if let Some(person) = person { Some(person.id) } else { None }
+                                name=if let Some(person) = person { person.name.clone() } else { String::default() }
+                                go_to_persons_list=go_to_persons_list_page.clone()
+                                db_conn=Some(self.db_conn.clone())
+                            />
+                        },
                         _ => html! { <div></div> }
                     }
                 }

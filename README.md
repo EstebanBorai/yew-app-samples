@@ -40,6 +40,7 @@ http-server ./counter/index.html
 
 * `counter`: A basic counter using Yew's callbacks and state capabilities
 * `adder`: A simple sum calculator
+* `auth`: CRUD application to manage persons details with a naive authentication
 
 ## References
 
