@@ -5,6 +5,7 @@ use std::cell::RefCell;
 
 pub type DbConn = Rc<RefCell<Database>>;
 
+#[derive(Debug)]
 pub struct Database {
     persons: Vec<Person>,
     users: Vec<User>,
