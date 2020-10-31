@@ -195,21 +195,23 @@ impl Component for PersonsList {
                                 </thead>
                                 <tbody>
                                     {
-                                        for self.filtered_persons.iter().map(|p| {
-                                            let id = p.id;
-                                            let name = p.name.clone();
+                                        for self.filtered_persons.iter().map(|person| {
+                                            let id = person.id;
+                                            let name = person.name.clone();
+                                            let on_toggle_select = self.link.callback(move |_| Msg::ToggleSelect(id));
+                                            let on_edit = self.link.callback(move |_| Msg::Edit(id));
 
                                             html! {
                                                 <tr>
                                                     <td>
                                                         <input
                                                             type="checkbox"
-                                                            oninput=self.link.callback(|_| Msg::ToggleSelect(id))
+                                                            oninput=on_toggle_select
                                                             checked=self.selected_ids.contains(&id)
                                                         />
                                                     </td>
                                                     <td>
-                                                        <button onclick=self.link.callback(|_| Msg::Edit(id))>
+                                                        <button onclick=on_edit>
                                                             {"Edit"}
                                                         </button>
                                                     </td>
